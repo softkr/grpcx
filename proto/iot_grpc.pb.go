@@ -18,7 +18,8 @@ const _ = grpc.SupportPackageIsVersion7
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type GreeterClient interface {
-	// Sends a greeting
+	WatchStatus(ctx context.Context, in *WatchState, opts ...grpc.CallOption) (*WatchStateReply, error)
+	WatchUpdate(ctx context.Context, in *WatchUpdates, opts ...grpc.CallOption) (*WatchStateReply, error)
 	GetProject(ctx context.Context, in *ProjectRequest, opts ...grpc.CallOption) (*ProjectReply, error)
 	SetFileInfo(ctx context.Context, in *SetFileInfoRequest, opts ...grpc.CallOption) (*SetFileInfoReply, error)
 	FindSubFile(ctx context.Context, in *GetFindFileInfoRequest, opts ...grpc.CallOption) (*GetFindFileInReply, error)
@@ -33,6 +34,24 @@ type greeterClient struct {
 
 func NewGreeterClient(cc grpc.ClientConnInterface) GreeterClient {
 	return &greeterClient{cc}
+}
+
+func (c *greeterClient) WatchStatus(ctx context.Context, in *WatchState, opts ...grpc.CallOption) (*WatchStateReply, error) {
+	out := new(WatchStateReply)
+	err := c.cc.Invoke(ctx, "/proto.Greeter/WatchStatus", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *greeterClient) WatchUpdate(ctx context.Context, in *WatchUpdates, opts ...grpc.CallOption) (*WatchStateReply, error) {
+	out := new(WatchStateReply)
+	err := c.cc.Invoke(ctx, "/proto.Greeter/WatchUpdate", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
 }
 
 func (c *greeterClient) GetProject(ctx context.Context, in *ProjectRequest, opts ...grpc.CallOption) (*ProjectReply, error) {
@@ -93,7 +112,8 @@ func (c *greeterClient) SubFileCount(ctx context.Context, in *SubFileCountReques
 // All implementations must embed UnimplementedGreeterServer
 // for forward compatibility
 type GreeterServer interface {
-	// Sends a greeting
+	WatchStatus(context.Context, *WatchState) (*WatchStateReply, error)
+	WatchUpdate(context.Context, *WatchUpdates) (*WatchStateReply, error)
 	GetProject(context.Context, *ProjectRequest) (*ProjectReply, error)
 	SetFileInfo(context.Context, *SetFileInfoRequest) (*SetFileInfoReply, error)
 	FindSubFile(context.Context, *GetFindFileInfoRequest) (*GetFindFileInReply, error)
@@ -107,6 +127,12 @@ type GreeterServer interface {
 type UnimplementedGreeterServer struct {
 }
 
+func (UnimplementedGreeterServer) WatchStatus(context.Context, *WatchState) (*WatchStateReply, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method WatchStatus not implemented")
+}
+func (UnimplementedGreeterServer) WatchUpdate(context.Context, *WatchUpdates) (*WatchStateReply, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method WatchUpdate not implemented")
+}
 func (UnimplementedGreeterServer) GetProject(context.Context, *ProjectRequest) (*ProjectReply, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetProject not implemented")
 }
@@ -136,6 +162,42 @@ type UnsafeGreeterServer interface {
 
 func RegisterGreeterServer(s grpc.ServiceRegistrar, srv GreeterServer) {
 	s.RegisterService(&Greeter_ServiceDesc, srv)
+}
+
+func _Greeter_WatchStatus_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(WatchState)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(GreeterServer).WatchStatus(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/proto.Greeter/WatchStatus",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(GreeterServer).WatchStatus(ctx, req.(*WatchState))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Greeter_WatchUpdate_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(WatchUpdates)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(GreeterServer).WatchUpdate(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/proto.Greeter/WatchUpdate",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(GreeterServer).WatchUpdate(ctx, req.(*WatchUpdates))
+	}
+	return interceptor(ctx, in, info, handler)
 }
 
 func _Greeter_GetProject_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
@@ -253,6 +315,14 @@ var Greeter_ServiceDesc = grpc.ServiceDesc{
 	ServiceName: "proto.Greeter",
 	HandlerType: (*GreeterServer)(nil),
 	Methods: []grpc.MethodDesc{
+		{
+			MethodName: "WatchStatus",
+			Handler:    _Greeter_WatchStatus_Handler,
+		},
+		{
+			MethodName: "WatchUpdate",
+			Handler:    _Greeter_WatchUpdate_Handler,
+		},
 		{
 			MethodName: "GetProject",
 			Handler:    _Greeter_GetProject_Handler,

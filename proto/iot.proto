@@ -21,12 +21,41 @@ package proto;
 // The greeting service definition.
 service Greeter {
   // Sends a greeting
+
+  rpc WatchStatus (WatchState) returns (WatchStateReply){};
+  rpc WatchUpdate (WatchUpdates) returns (WatchStateReply){};
+
+
   rpc GetProject (ProjectRequest) returns (ProjectReply) {};
   rpc SetFileInfo (SetFileInfoRequest) returns (SetFileInfoReply) {}
   rpc FindSubFile(GetFindFileInfoRequest)returns(GetFindFileInReply){}
   rpc PutFileInfo(PutFileInfoRequest)returns(PutFileInfoReply){}
   rpc DeleteFileInfo (RemoveFileInfoRequest) returns (RemoveFileInfoReply){}
   rpc SubFileCount(SubFileCountRequest)returns(SubFileCountReply){}
+}
+
+//워치상태
+message WatchState{
+  string sn = 1; // 시리얼번호
+  string addr = 2; // 소켓 ip 주소
+  enum STATUS{
+    unknown = 0;
+    on = 1;
+    off = 2;
+  }
+  STATUS status = 3; // 상태 [On , Off]xw
+}
+
+message WatchStateReply{
+  int32 status = 1; // 상태코드
+  string message = 2; //프로젝트
+}
+
+// 워치 업데이트
+message WatchUpdates{
+  string sn = 1; // 시리얼번호
+  int32 wear = 2; // 걸음수
+  int32 takeMedicine = 3; // 복약회수
 }
 
 message ProjectRequest{
