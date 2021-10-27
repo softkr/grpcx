@@ -1,4 +1,4 @@
-module github.com/softkr/grpcx
+module gRPC
 
 go 1.17
 

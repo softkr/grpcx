@@ -8,8 +8,8 @@ import (
 	"strings"
 	"time"
 
+	pb "gRPC/proto"
 	_ "github.com/joho/godotenv/autoload"
-	pb "github.com/softkr/grpcx/proto"
 	"google.golang.org/grpc"
 )
 

@@ -14,7 +14,7 @@
 
 syntax = "proto3";
 
-option go_package = "github.com/softkr/grpcx/proto/iot";
+option go_package = "gRPC/proto/iot";
 
 package proto;
 
